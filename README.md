@@ -23,12 +23,12 @@ The objective of this work is to develop an AI-based predictive model to determi
 ## Notes
 * What is the actual problem? Multi output regression!
 * We are interested in the short-term load forecasting regime (from 24 h to one week). STLF is essential for controlling and scheduling of the power system in making everyday power system operation, interchange evaluation, security assessment, reliability analysis, and spot price calculation, which leads to the higher accuracy requirement compared to long-term prediction.
-* We want to predict (time) series of vectors with the fractions of each generation technology with respect to the German electricity mix from former (time) series. Historic and forecast window are hyperparameters!
+* We want to predict (time) series of vectors with the fractions of each generation technology with respect to the German electricity mix ("Actual Generation per Production Type", [https://transparency.entsoe.eu/](https://transparency.entsoe.eu/)) from former (time) series. Historic and forecast window are hyperparameters!
 
 ### Data
 * Which data do we want to use? How does the actual input data look?
-* Each sample is a vector with the fractions of each generation technology with respect to the German electricty mix at a certain point in time
-* What is the temporal resolution of the data? Hourly? Time step t_i+1 = t_i + delta t with delta t = 24 h?
+* Data is published daily with a resolution of 15 min.
+* Each sample is a matrix with the fractions of each generation technology with respect to the German electricty mix for a defined series of consecutive points in time.
 * Transforms: Standardization, residuals
 * Iterator: Windows <-- historic | forecast -->; naive / stride tricks
 

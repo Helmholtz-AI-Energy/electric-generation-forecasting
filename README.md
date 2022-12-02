@@ -32,6 +32,59 @@ The objective of this work is to develop an AI-based predictive model to determi
 * Transforms: Standardization, residuals
 * Iterator: Windows <-- historic | forecast -->; naive / stride tricks
 
+#### Actual Generation per Production Type
+Actual aggregated net generation output (MW) per market time unit and per production type.
+The information shall be published no later than one hour after the operational period.
+
+**Specification of calculation** Average of all available instantaneous net generation output values on each market time unit. If a net generation output is not known, it shall be estimated. The actual generation of small-scale units might be estimated if no real-time measurement devices exist.
+
+**Primary owner of the data** Owners of generation units or transmission system operators (TSOs)  
+**Data provider** TSOs or other Data Provider of information depending on local organisation.
+
+#### Actual wind and solar power generation
+Actual or estimated wind and solar power net generation (MW) in each bidding zone per market time unit.
+A bidding zone is the largest geographical area within which market participants are able to exchange energy without capacity allocation. Within each bidding zone, a single (wholesale) electricity market price applies. Currently, bidding zones in Europe are mostly defined by national borders. 
+The information shall to be published no later than one hour after the end of each operating period (of one market time unit length) and be updated on the basis of measured values as soon as they become available. The information shall be provided for all bidding zones only in Member States with more than 1% feed-in of wind or solar power generation per year or for bidding zones with more than 5% feed-in of wind or solar power generation per year.
+
+**Specification of calculation** Average of all available instantaneous power output values on each market time unit. If net power generation output is not known, it shall be estimated.The actual generation of small-scale units might be estimated if no real-time measurement devices exist.
+
+**Primary owner of the data** Owners of generating units and / or DSOs  
+**Data provider** TSOs or other Data Provider of information depending on local organisation.  
+**Aggregation** Locally ( in Data provider)
+
+**Publication deadline for ENTSO-E** H+1 following the concerned MTU  
+**Updates** Multiple update possible based on measured data
+
+#### Manual inspection of exemplary data for GER downloaded as CSV file 
+
+There are 23 columns (= raw features):
+- A. Area: All the same because we are only interested in Germany (DE).
+- B. MTU: Considered time window (start + end with delta = 15 min)
+- C. Biomass - Actual Aggregated [MW]
+- D. Fossil Brown coal/Lignite - Actual Aggregated [MW]
+- E. Fossil Coal-derived gas - Actual Aggregated [MW]
+- F. Fossil Gas - Actual Aggregated [MW]
+- G. Fossil Hard coal - Actual Aggregated [MW]
+- H. Fossil Oil - Actual Aggregated [MW]
+- I. Fossil Oil shale - Actual Aggregated [MW]
+- J. Fossil Peat - Actual Aggregated [MW]
+- K. Geothermal - Actual Aggregated [MW]
+- L. Hydro Pumped Storage - Actual Aggregated [MW]
+- *M. Hydro Pumped Storage  - Actual Consumption [MW]* WHAT IS THIS?
+- N. Hydro Run-of-river and poundage - Actual Aggregated [MW]
+- O. Hydro Water Reservoir - Actual Aggregated [MW]
+- P. Marine - Actual Aggregated [MW]
+- Q. Nuclear - Actual Aggregated [MW]
+- R. Other - Actual Aggregated [MW]
+- S. Other renewable - Actual Aggregated [MW]
+- T. Solar - Actual Aggregated [MW]
+- U. Waste - Actual Aggregated [MW]
+- V. Wind Offshore - Actual Aggregated [MW]
+- W. Wind Onshore - Actual Aggregated [MW]
+
+Do all these generation types appear separately in the merit order or can we combine some of them?  
+For our model, we only use the data for GER itself (even though it is also influenced by the data from other countries)?
+
 ### Models
 
 https://www.entsoe.eu/Technopedia/techsheets/enhanced-load-forecasting
@@ -48,7 +101,7 @@ https://www.entsoe.eu/Technopedia/techsheets/enhanced-load-forecasting
     * Use category-based average of last n profiles as forecast: Last(n) category-forecast
     * Usually: n = 3 (can also capture seasonal + weather related changes)
     * Last(1) = persistence (tomorrow will be the same as today), simple + efficient, but struggles with weekends + holidays.
-    * Useful Python package: holidays
+    * Useful Python package: `holidays`
 
 * **ARIMA (Auto-Regressive Integrated Moving Average) model**
 

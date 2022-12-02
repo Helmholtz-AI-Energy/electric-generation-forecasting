@@ -48,7 +48,7 @@ The information shall to be published no later than one hour after the end of ea
 
 **Specification of calculation** Average of all available instantaneous power output values on each market time unit. If net power generation output is not known, it shall be estimated.The actual generation of small-scale units might be estimated if no real-time measurement devices exist.
 
-**Primary owner of the data** Owners of generating units and / or DSOs  
+**Primary owner of the data** Owners of generating units and / or distribution system operators (DSOs)  
 **Data provider** TSOs or other Data Provider of information depending on local organisation.  
 **Aggregation** Locally ( in Data provider)
 
@@ -83,7 +83,23 @@ There are 23 columns (= raw features):
 - W. Wind Onshore - Actual Aggregated [MW]
 
 Do all these generation types appear separately in the merit order or can we combine some of them?  
-For our model, we only use the data for GER itself (even though it is also influenced by the data from other countries)?
+For our model, we only use the data for GER itself (even though it is also influenced by the data from other countries)?  
+How to include the generation forecasts (day ahead, wind + solar)?
+
+#### What do we need to have in our input data?
+
+Raw features:
+- time slot (market time unit)
+    - Which format? 
+- generation technology (production type)
+    - One-hot encoded? 
+- actual aggregated net generation output in MW (i.e., per market time unit and per production type)
+    - Normalize?
+    - Calculate residuals w.r.t. PSLP?
+
+Derived features:
+- PSLP category (i.e., weekday, Saturday, Sunday / holiday)
+    - One-hot-encoded 
 
 ### Models
 

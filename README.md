@@ -16,6 +16,8 @@ The objective of this work is to develop an AI-based predictive model to determi
 
 ## Tasks
 1. Implement dataloader (MW).
+    - Use entsoe-py Python package: [https://github.com/EnergieID/entsoe-py](https://github.com/EnergieID/entsoe-py)
+    - Use pandas dataframes.
 2. Implement persistence (MW).
 3. Implement PSLPs (MW).
 4. Implement simplest DL model (MW + JST).
@@ -120,7 +122,8 @@ https://www.entsoe.eu/Technopedia/techsheets/enhanced-load-forecasting
     * Useful Python package: `holidays`
 
 * **ARIMA (Auto-Regressive Integrated Moving Average) model**
-
+    * SARIMA (Seasonal ARIMA)
+    
 #### Deep-learning methods
 
 * **Recurrenct neural networks (RNNs)**

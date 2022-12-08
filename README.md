@@ -105,7 +105,7 @@ Derived features:
 
 ### Models
 
-https://www.entsoe.eu/Technopedia/techsheets/enhanced-load-forecasting
+[https://www.entsoe.eu/Technopedia/techsheets/enhanced-load-forecasting](https://www.entsoe.eu/Technopedia/techsheets/enhanced-load-forecasting)
 #### Statistical methods
 
 * **Persistence**
@@ -123,6 +123,8 @@ https://www.entsoe.eu/Technopedia/techsheets/enhanced-load-forecasting
 
 * **ARIMA (Auto-Regressive Integrated Moving Average) model**
     * SARIMA (Seasonal ARIMA)
+    * [https://www.statsmodels.org/stable/generated/statsmodels.tsa.arima.model.ARIMA.html](https://www.statsmodels.org/stable/generated/statsmodels.tsa.arima.model.ARIMA.html)
+    * [https://machinelearningmastery.com/sarima-for-time-series-forecasting-in-python/](https://machinelearningmastery.com/sarima-for-time-series-forecasting-in-python/)
     
 #### Deep-learning methods
 
@@ -135,6 +137,6 @@ https://www.entsoe.eu/Technopedia/techsheets/enhanced-load-forecasting
     * Decoder uses hidden state to make forecast.
 
 * **CNN-LSTM (ENTSO-E dual model)**
-    * A Deep Neural Network Model for Short-Term Load Forecast Based on Long Short-Term Memory Network and Convolutional Neural Network https://doi.org/10.3390/en11123493 (implementation for univariate input data (i.e., scalar load), replace 1d convolutions with higher-d convolutions to adapt for multivariate input data)
+    * A Deep Neural Network Model for Short-Term Load Forecast Based on Long Short-Term Memory Network and Convolutional Neural Network [https://doi.org/10.3390/en11123493](https://doi.org/10.3390/en11123493) (implementation for univariate input data (i.e., scalar load), replace 1d convolutions with higher-d convolutions to adapt for multivariate input data)
 
 * **Transformers**

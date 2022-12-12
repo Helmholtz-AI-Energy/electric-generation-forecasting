@@ -140,3 +140,13 @@ Derived features:
     * A Deep Neural Network Model for Short-Term Load Forecast Based on Long Short-Term Memory Network and Convolutional Neural Network [https://doi.org/10.3390/en11123493](https://doi.org/10.3390/en11123493) (implementation for univariate input data (i.e., scalar load), replace 1d convolutions with higher-d convolutions to adapt for multivariate input data)
 
 * **Transformers**
+
+### Meeting minutes
+#### 2022-12-12
+- Implemented minimal examples for querying data from ENTSO-E transparency platform via Python interface for RESTful API with `entsoe-py` and `entsoe-client` ([https://pypi.org/project/entsoe-client/](https://pypi.org/project/entsoe-client/)). See Jupyter notebooks.
+- Error for `entsoe-py` => Github issue [https://github.com/EnergieID/entsoe-py/issues/225](https://github.com/EnergieID/entsoe-py/issues/225), loading only works for Belgium but not for Germany!
+- Loading with `entsoe-client` works but is kind of hard to follow.
+
+- **TODO** Understand data loading with `entsoe-client` in detail, in particular handling of NaN.
+- **TODO** Wait for response to issue.
+- **TODO** How to passe pandas dataframe to PyTorch dataloader?

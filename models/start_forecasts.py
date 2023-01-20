@@ -1,4 +1,4 @@
-from models.pslp_forecasts import modelling_pslp, modelling_pslp_fix, modelling_pslp_var
+from .pslp_forecasts import modelling_pslp, modelling_pslp_fix, modelling_pslp_var
 
 
 def start_pslp(data, forecast_method, pslp_opt, scores, mode, plot_opt):

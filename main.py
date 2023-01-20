@@ -9,7 +9,7 @@ from models.data_preparation import prepare_data
 forecast_method = "pslp" # select: "pslp", "transformer" ....
 mode = "load" # select: "load", "generation" ......
 pslp_opt = "fix" # select: "standard", "fix" or "var"
-plot_opt = False # plot predictions "True" or "False"
+plot_opt = True # plot predictions "True" or "False"
 start_date = "2020-06-01"
 end_date = "2022-12-31"
 

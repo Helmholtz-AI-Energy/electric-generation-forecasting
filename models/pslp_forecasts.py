@@ -1,5 +1,5 @@
-from models.PSLP import PersonalizedStandardizedLoadProfile
-from models.plot_results import plot_prediction
+from .PSLP import PersonalizedStandardizedLoadProfile
+from .plot_results import plot_prediction
 from tqdm import tqdm
 import pandas as pd
 from sklearn.metrics import mean_squared_error, mean_absolute_error, mean_absolute_percentage_error

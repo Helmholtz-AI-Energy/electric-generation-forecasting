@@ -13,7 +13,7 @@ def plot_prediction(predictions, measurements, time_point, method, mode, sector)
     ax.plot(predictions, c="red", label="predicted")
     #ax.set_ylim(0, 90000)
     ax.set_xlabel('Time', fontsize=10)
-    ax.set_ylabel('Load, kW', fontsize=10)
+    ax.set_ylabel('Load, MW', fontsize=10)
     ax.legend(loc="upper right", fontsize=8)
     # Axis formatter
     plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%d-%m %H:%M'))

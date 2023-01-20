@@ -35,17 +35,17 @@ if args.list:
     parser.exit(status=0)
 
 if args.name is not None:
-    notebook_file = f".\\analysis\\{args.name}.ipynb"
+    notebook_file = f".\\notebooks\\{args.name}.ipynb"
     if not os.path.isfile(notebook_file):
         import shutil
-        shutil.copyfile('.\\analysis\\empty.ipynb', notebook_file)
+        shutil.copyfile('.\\notebooks\\empty.ipynb', notebook_file)
 
     argv = [notebook_file]
 else:
     argv = []
 
 os.environ['PROJECT_HOME'] = os.getcwd()
-os.environ['NOTEBOOK_HOME'] = os.path.abspath('./analysis')
+os.environ['NOTEBOOK_HOME'] = os.path.abspath('./notebooks')
 
 app = NotebookApp()
 app.launch_instance(argv)

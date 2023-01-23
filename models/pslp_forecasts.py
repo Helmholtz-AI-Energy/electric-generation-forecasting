@@ -2,37 +2,102 @@ from .PSLP import PersonalizedStandardizedLoadProfile
 from .plot_results import plot_prediction
 from tqdm import tqdm
 import pandas as pd
+import numpy as np
 from sklearn.metrics import mean_squared_error, mean_absolute_error, mean_absolute_percentage_error
 
 def modelling_pslp(data, previous_days, forecast_horizon, scores, method, sector, mode, plot_opt):
-    pslp = PersonalizedStandardizedLoadProfile(target_column='load', data_frequency='15Min',
-                                               forecast_horizon=f'{forecast_horizon}D', country='DE', state='NI')
 
-    pred = pd.DataFrame()
-    real = pd.DataFrame()
-    load_data = data['load']
-    for x in tqdm(range(previous_days, int(len(load_data) / 96) - forecast_horizon - 1)):
-        i = x * 96
-        if x == previous_days:
-            current_data = load_data.iloc[:i].to_frame()
-        else:
-            current_data = load_data.iloc[i - 96:i].to_frame()
-        pslp.preprocess_new_data(current_data)
 
-        time_now = load_data.iloc[i - 96:i+1].last_valid_index()
-        prediction = pslp.forecast_standard(time_now)
-        pred = pd.concat([pred, prediction], axis=0)
-        real_measurements = load_data[i:i + forecast_horizon * 96]
-        real = pd.concat([real, real_measurements], axis=0)
+    if mode == "generation":
+        for column in data:
+            pslp = PersonalizedStandardizedLoadProfile(target_column=column, data_frequency='15Min',
+                                                       forecast_horizon=f'{forecast_horizon}D', country='DE',
+                                                       )
+            pred = pd.DataFrame()
+            real = pd.DataFrame()
+            load_data = pd.DataFrame()
+            load_data[column] = data[column]
+            load_data = load_data.fillna(0.0)
 
-        mae = mean_absolute_error(prediction, real_measurements)
-        mse = mean_squared_error(prediction, real_measurements)
-        mape = mean_absolute_percentage_error(prediction, real_measurements)
-        scores.loc[time_now, f'mae_pslp_std'] = mae
-        scores.loc[time_now, f'mse_pslp_std'] = mse
-        scores.loc[time_now, f'mape_pslp_std'] = mape * 100
-        if plot_opt == True:
-            plot_prediction(prediction, real_measurements, time_now, method, mode, sector)
+            for x in tqdm(range(previous_days, int(len(load_data) / 96) - forecast_horizon - 1)):
+                i = x * 96
+                if x == previous_days:
+                    current_data = load_data.iloc[:i]
+                else:
+                    current_data = load_data.iloc[i - 96:i]
+                pslp.preprocess_new_data(current_data)
+
+                time_now = load_data.iloc[i - 96:i + 1].last_valid_index()
+                prediction = pslp.forecast_standard(time_now)
+                pred = pd.concat([pred, prediction], axis=0)
+                real_measurements = load_data[i:i + forecast_horizon * 96]
+                real = pd.concat([real, real_measurements], axis=0)
+
+                print(time_now)
+
+                if x == 105:
+                    a=1
+                mae = mean_absolute_error(prediction, real_measurements)
+                mse = mean_squared_error(prediction, real_measurements)
+                mape = mean_absolute_percentage_error(prediction, real_measurements)
+                scores.loc[time_now, f'mae_pslp_std'] = mae
+                scores.loc[time_now, f'mse_pslp_std'] = mse
+                scores.loc[time_now, f'mape_pslp_std'] = mape * 100
+                if plot_opt == True:
+                    plot_prediction(prediction, real_measurements, time_now, method, mode, sector)
+
+            scores.to_csv(
+                "./results/" + method + "/" + sector + "/" + mode + "/" + "score_pslp_" + mode + "_" + sector + str(column) + ".csv",
+                sep=";")
+            real.to_csv(
+                "./results/" + method + "/" + sector + "/" + mode + "/" + "real_pslp_" + mode + "_" + sector + str(column) + ".csv",
+                sep=";")
+            pred.to_csv(
+                "./results/" + method + "/" + sector + "/" + mode + "/" + "pred_pslp_" + mode + "_" + sector + str(column) + ".csv",
+                sep=";")
+
+    elif mode == "load":
+        pslp = PersonalizedStandardizedLoadProfile(target_column="load", data_frequency='15Min',
+                                                   forecast_horizon=f'{forecast_horizon}D', country='DE',
+                                                   state='NI')
+
+        pred = pd.DataFrame()
+        real = pd.DataFrame()
+        load_data = data['load']
+
+
+        for x in tqdm(range(previous_days, int(len(load_data) / 96) - forecast_horizon - 1)):
+            i = x * 96
+            if x == previous_days:
+                current_data = load_data.iloc[:i].to_frame()
+            else:
+                current_data = load_data.iloc[i - 96:i].to_frame()
+            pslp.preprocess_new_data(current_data)
+
+            time_now = load_data.iloc[i - 96:i+1].last_valid_index()
+            prediction = pslp.forecast_standard(time_now)
+            pred = pd.concat([pred, prediction], axis=0)
+            real_measurements = load_data[i:i + forecast_horizon * 96]
+            real = pd.concat([real, real_measurements], axis=0)
+
+            mae = mean_absolute_error(prediction, real_measurements)
+            mse = mean_squared_error(prediction, real_measurements)
+            mape = mean_absolute_percentage_error(prediction, real_measurements)
+            scores.loc[time_now, f'mae_pslp_std'] = mae
+            scores.loc[time_now, f'mse_pslp_std'] = mse
+            scores.loc[time_now, f'mape_pslp_std'] = mape * 100
+            if plot_opt == True:
+                plot_prediction(prediction, real_measurements, time_now, method, mode, sector)
+
+        scores.to_csv(
+            "./results/" + method + "/" + sector + "/" + mode + "/" + "score_pslp_" + mode + "_" + sector + ".csv",
+            sep=";")
+        real.to_csv(
+            "./results/" + method + "/" + sector + "/" + mode + "/" + "real_pslp_" + mode + "_" + sector + ".csv",
+            sep=";")
+        pred.to_csv(
+            "./results/" + method + "/" + sector + "/" + mode + "/" + "pred_pslp_" + mode + "_" + sector + ".csv",
+            sep=";")
 
     return scores, pred, real
 

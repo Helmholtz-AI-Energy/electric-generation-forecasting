@@ -514,10 +514,11 @@ class PersonalizedStandardizedLoadProfile:
         forecast_data['time'] = forecast_data.index.time
         forecast_data['date'] = forecast_data.index.date
         unique_dates = np.unique(forecast_data.index.date)
+
         for date in unique_dates:
             season, day_info = self._classification_day(date)
             name_of_profile = season + day_info
-            cached_data = self.profile_storage.get(name_of_profile).fillna(method="ffill")
+            cached_data = self.profile_storage.get(name_of_profile)
             profile = self._aggregate_to_profile(cached_data)
             # if the profile derived is empty or has not all times get previous profile
             if profile.empty or profile.dropna().shape[0] < self.steps_per_day:

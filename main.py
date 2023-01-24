@@ -10,7 +10,7 @@ forecast_method = "pslp" # select: "pslp", "transformer" ....
 mode = "generation" # select: "load", "generation" ......
 pslp_opt = "standard" # select: "standard", "fix" or "var"
 plot_opt = True # plot predictions "True" or "False"
-start_date = "2020-06-01"
+start_date = "2021-01-01"
 end_date = "2022-11-30"
 
 ###########################################################

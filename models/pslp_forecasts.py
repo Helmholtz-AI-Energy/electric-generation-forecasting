@@ -11,8 +11,11 @@ def modelling_pslp(data, previous_days, forecast_horizon, scores, method, sector
     if mode == "generation":
         for column in data:
             pslp = PersonalizedStandardizedLoadProfile(target_column=column, data_frequency='15Min',
-                                                       forecast_horizon=f'{forecast_horizon}D', country='DE',
+                                                     forecast_horizon=f'{forecast_horizon}D', country='DE',
                                                        )
+            new_col = column.replace("/", "")
+            new_col = new_col.replace(".", "")
+
             pred = pd.DataFrame()
             real = pd.DataFrame()
             load_data = pd.DataFrame()
@@ -27,6 +30,9 @@ def modelling_pslp(data, previous_days, forecast_horizon, scores, method, sector
                     current_data = load_data.iloc[i - 96:i]
                 pslp.preprocess_new_data(current_data)
 
+                if x == 106:
+                    a=1
+
                 time_now = load_data.iloc[i - 96:i + 1].last_valid_index()
                 prediction = pslp.forecast_standard(time_now)
                 pred = pd.concat([pred, prediction], axis=0)
@@ -35,8 +41,7 @@ def modelling_pslp(data, previous_days, forecast_horizon, scores, method, sector
 
                 print(time_now)
 
-                if x == 105:
-                    a=1
+
                 mae = mean_absolute_error(prediction, real_measurements)
                 mse = mean_squared_error(prediction, real_measurements)
                 mape = mean_absolute_percentage_error(prediction, real_measurements)
@@ -44,16 +49,17 @@ def modelling_pslp(data, previous_days, forecast_horizon, scores, method, sector
                 scores.loc[time_now, f'mse_pslp_std'] = mse
                 scores.loc[time_now, f'mape_pslp_std'] = mape * 100
                 if plot_opt == True:
-                    plot_prediction(prediction, real_measurements, time_now, method, mode, sector)
+                    plot_prediction(prediction, real_measurements, time_now, method, mode, sector, new_col)
+
 
             scores.to_csv(
-                "./results/" + method + "/" + sector + "/" + mode + "/" + "score_pslp_" + mode + "_" + sector + str(column) + ".csv",
+                "./results/" + method + "/" + mode + "/" + sector + "/" + "score_pslp_" + mode + "_" + sector + str(new_col) + ".csv",
                 sep=";")
             real.to_csv(
-                "./results/" + method + "/" + sector + "/" + mode + "/" + "real_pslp_" + mode + "_" + sector + str(column) + ".csv",
+                "./results/" + method + "/" + mode + "/" + sector + "/" + "real_pslp_" + mode + "_" + sector + str(new_col) + ".csv",
                 sep=";")
             pred.to_csv(
-                "./results/" + method + "/" + sector + "/" + mode + "/" + "pred_pslp_" + mode + "_" + sector + str(column) + ".csv",
+                "./results/" + method + "/" + mode + "/" + sector + "/" + "pred_pslp_" + mode + "_" + sector + str(new_col) + ".csv",
                 sep=";")
 
     elif mode == "load":

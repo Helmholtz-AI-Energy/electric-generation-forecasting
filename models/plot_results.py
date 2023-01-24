@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import seaborn as sns
 
-def plot_prediction(predictions, measurements, time_point, method, mode, sector):
+def plot_prediction(predictions, measurements, time_point, method, mode, sector, column):
 
     #matplotlib.rcParams['timezone'] = 'Germany/Berlin'
     fig, ax = plt.subplots(figsize=(6, 4))
@@ -23,5 +23,5 @@ def plot_prediction(predictions, measurements, time_point, method, mode, sector)
     # plt.legend(fontsize=8)
     fig.tight_layout()
     date_for_name = time_point.strftime("%Y-%m-%d_%H-%M")
-    plt.savefig("./results/"+method+"/"+mode+"/"+sector+"/figures/"+method+"_"+mode+"_"+sector+"_"+date_for_name+".jpg", dpi=300)
+    plt.savefig("./results/"+method+"/"+mode+"/"+sector+"/figures/"+method+"_"+mode+"_"+sector+"_"+str(column)+"_"+date_for_name+".jpg", dpi=300)
     plt.close()

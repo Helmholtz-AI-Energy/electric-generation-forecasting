@@ -1,14 +1,20 @@
+import pandas as pd
+import numpy as np
+from tqdm.auto import tqdm
+pd.set_option('display.max_rows', 100)
+
 class PSLPDataset:
     """
-    Class for fetching and preprocessing ENTSO-E load and generation data.
+    Fetch and preprocess ENTSO-E load and generation data. Calculate PSLPs and residuals.
     """
     def __init__(
         self,
-        start_date, 
-        end_date,                          # overall end date
-        api_key, # web token for RESTful API
+        start_date,                        # start date
+        end_date,                          # end date
+        api_key,                           # web token for RESTful API
         country_code = "10Y1001A1001A83F", # country code (default: Germany)
-        time_zone = "Europe/Berlin" # time zone for Germany
+        time_zone = "Europe/Berlin",       # time zone for Germany
+        downsample = False,                # downsample 1h resolution
                 ):
         """
         Initialize PSLP dataset.
@@ -24,6 +30,8 @@ class PSLPDataset:
                        country code
         time zone : str
                     time zone
+        downsample : bool
+                     Downsample to 1h resolution or not.
         """
         self.start_date = start_date
         self.end_date = end_date
@@ -33,6 +41,7 @@ class PSLPDataset:
         self.df = None
         self.original_headers = None
         self.errors = None
+        self.downsample = downsample
         self.fetch_data()
         self.calculate_pslps()
         self.calculate_residuals()
@@ -41,9 +50,7 @@ class PSLPDataset:
     def _get_load_intervals(self):
         """
         Get time points for sequential data loading from ENTSO-E transparency platform.
-        
         For one request, the time delta for loading data from the platform is limited to one year.
-        
         
         Returns
         -------
@@ -136,7 +143,9 @@ class PSLPDataset:
                 print("Creating columns for PSLP calculation...")
                 for header in original_headers:
                     df_final[str(header) + " PSLP"] = pd.Series(dtype='float')
-                
+                if self.downsample:
+                    print("Downsample to 1h resolution...")
+                    df_final = df_final.resample('1H', axis='index').mean()                
                 print("Returning final data frame...")
                 self.df = df_final
                 self.original_headers = original_headers
@@ -307,7 +316,11 @@ class PSLPDataset:
         for header in self.original_headers:
             if DEBUG:
                 print(f"{header}...")
-            self.df[header+" PSLP"].at[date_str] = pd.concat([self.df[header].at[d].reset_index(drop=True) for d in lookback_dates], axis=1).mean(axis=1)
+            pslp_temp = pd.concat([self.df[header].at[d].reset_index(drop=True) for d in lookback_dates], axis=1).mean(axis=1)
+            #print(self.df[header+" PSLP"].at[date_str].shape, pslp_temp.shape)
+            num_points = self.df[header].at[date_str].shape[0]
+            self.df[header+" PSLP"].at[date_str] = pslp_temp.head(num_points)
+            #pd.concat([self.df[header].at[d].reset_index(drop=True) for d in lookback_dates], axis=1).mean(axis=1).head(num_points)
     
     
     def calculate_pslps(self, date_str=None, lookback=3, country_code='DE', DEBUG=False):
@@ -381,7 +394,7 @@ class PSLPDataset:
         fig.update_layout(height=10000, width=1200)
         fig.show()
         
-       
+
     def calculate_errors(self):
         """
         Calculate forecasting errors for preprocessed ENTSO-E load and generation data.  

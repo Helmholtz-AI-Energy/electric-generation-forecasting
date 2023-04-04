@@ -15,6 +15,7 @@ class PSLPDataset:
         country_code = "10Y1001A1001A83F", # country code (default: Germany)
         time_zone = "Europe/Berlin",       # time zone for Germany
         downsample = False,                # downsample 1h resolution
+        pslp = True,                       # calculate PSLPs
                 ):
         """
         Initialize PSLP dataset.
@@ -32,6 +33,8 @@ class PSLPDataset:
                     time zone
         downsample : bool
                      Downsample to 1h resolution or not.
+        pslp : bool
+               Calculate PSLPs or not
         """
         self.start_date = start_date
         self.end_date = end_date
@@ -42,10 +45,12 @@ class PSLPDataset:
         self.original_headers = None
         self.errors = None
         self.downsample = downsample
-        self.fetch_data()
-        self.calculate_pslps()
-        self.calculate_residuals()
-        self.calculate_errors()
+        self.fetch_data(pslp=pslp)
+        if pslp:
+            self.calculate_pslps()
+            self.calculate_residuals()
+            self.calculate_errors()
+        
     
     def _get_load_intervals(self):
         """
@@ -67,7 +72,11 @@ class PSLPDataset:
         
         # Create date range from start and end dates and determine year starts within range.
         # Convert data range to series.
-        dates = pd.date_range(start=self.start_date, end=self.end_date, freq="YS", inclusive="both").to_series()
+        dates = pd.date_range(start=self.start_date, 
+                              end=self.end_date, 
+                              freq="YS", 
+                              inclusive="both"
+                             ).to_series()
     
         # Check whether start date itself is year start.
         # If not, prepend to dates to consider for data loading.
@@ -113,7 +122,7 @@ class PSLPDataset:
         return df_final
 
     
-    def fetch_data(self, drop_consumption=True):
+    def fetch_data(self, drop_consumption=True, pslp=True):
         """
         Fetch actual load and generation per type from ENTSO-E transparency platform 
         for requested time interval. Set resulting dataframe as attribute.
@@ -140,9 +149,10 @@ class PSLPDataset:
                     df_final.drop(list(df_final.filter(regex='Consumption')), axis=1, inplace=True)
                 original_headers = df_final.columns
 
-                print("Creating columns for PSLP calculation...")
-                for header in original_headers:
-                    df_final[str(header) + " PSLP"] = pd.Series(dtype='float')
+                if pslp:
+                    print("Creating columns for PSLP calculation...")
+                    for header in original_headers:
+                        df_final[str(header) + " PSLP"] = pd.Series(dtype='float')
                 if self.downsample:
                     print("Downsample to 1h resolution...")
                     df_final = df_final.resample('1H', axis='index').mean()                
@@ -317,11 +327,9 @@ class PSLPDataset:
             if DEBUG:
                 print(f"{header}...")
             pslp_temp = pd.concat([self.df[header].at[d].reset_index(drop=True) for d in lookback_dates], axis=1).mean(axis=1)
-            #print(self.df[header+" PSLP"].at[date_str].shape, pslp_temp.shape)
             num_points = self.df[header].at[date_str].shape[0]
             self.df[header+" PSLP"].at[date_str] = pslp_temp.head(num_points)
-            #pd.concat([self.df[header].at[d].reset_index(drop=True) for d in lookback_dates], axis=1).mean(axis=1).head(num_points)
-    
+        return
     
     def calculate_pslps(self, date_str=None, lookback=3, country_code='DE', DEBUG=False):
         """

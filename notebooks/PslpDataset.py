@@ -156,7 +156,7 @@ class PSLPDataset:
                 if self.downsample:
                     print("Downsample to 1h resolution...")
                     df_final = df_final.resample('1H', axis='index').mean()                
-                print("Returning final data frame...")
+                print(f"Returning final data frame of shape {df_final.shape}...")
                 self.df = df_final
                 self.original_headers = original_headers
                 return

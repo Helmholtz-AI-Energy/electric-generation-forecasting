@@ -15,7 +15,7 @@ def prepare_data(sector, start, end):
 
         data.index = pd.to_datetime(data.index,
                                     utc=True
-                                    )
+                                    ).tz_convert(tz="Europe/Berlin")
         print(data.head())
         data = data.resample('15Min').last()
         # create empty DataFrames

@@ -1,6 +1,6 @@
 from models.start_forecasts import start_pslp
 from models.data_preparation import prepare_data
-
+from models.data_loader import prepare_data
 
 ###########################################################
 ### Selection options #####################################
@@ -13,6 +13,7 @@ plot_opt = True # plot predictions "True" or "False"
 start_date = "2021-01-01"
 end_date = "2022-11-30"
 
+data_path ="./data/load_data.csv"
 ###########################################################
 
 
@@ -27,3 +28,5 @@ if forecast_method == "pslp":
     print("start " + mode + " Personalized Standard Load Profile (PSLP) in forecast mode: " + pslp_opt)
     scores, real, pred = start_pslp(data, forecast_method, pslp_opt, scores, mode, plot_opt)
 
+
+prepare_data(data_path)

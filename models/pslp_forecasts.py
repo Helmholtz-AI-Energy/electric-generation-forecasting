@@ -3,6 +3,7 @@ from .plot_results import plot_prediction
 from tqdm import tqdm
 import pandas as pd
 import numpy as np
+from statsmodels.tsa.statespace.sarimax import SARIMAX
 from sklearn.metrics import mean_squared_error, mean_absolute_error, mean_absolute_percentage_error
 
 def modelling_pslp(data, previous_days, forecast_horizon, scores, method, sector, mode, plot_opt):
@@ -39,7 +40,7 @@ def modelling_pslp(data, previous_days, forecast_horizon, scores, method, sector
                 real_measurements = load_data[i:i + forecast_horizon * 96]
                 real = pd.concat([real, real_measurements], axis=0)
 
-                print(time_now)
+                #print(time_now)
 
 
                 mae = mean_absolute_error(prediction, real_measurements)

@@ -9,14 +9,17 @@ class PSLPDataset:
     """
     def __init__(
         self,
-        start_date,                        # start date
-        end_date,                          # end date
-        api_key,                           # web token for RESTful API
-        country_code = "10Y1001A1001A83F", # country code (default: Germany)
-        time_zone = "Europe/Berlin",       # time zone for Germany
-        downsample = False,                # downsample 1h resolution
-        pslp = True,                       # calculate PSLPs
-                ):
+        start_date,                        # Start date
+        end_date,                          # End date
+        api_key,                           # Web token for RESTful API
+        country_code = "10Y1001A1001A83F", # Country code (default: Germany)
+        time_zone = "Europe/Berlin",       # Time zone for Germany
+        downsample = False,                # Downsample 1h resolution
+        pslp = True,                       # Calculate PSLPs
+        lookback=3,                        # Number of days to consider in Last(n)-category PSLP calculation
+        drop_consumption=True,             # Drop consumption columns or not.
+        is_residual=True,                  # Drop initial n weeks without Last(n) category PSLPs or not. 
+        ):
         """
         Initialize PSLP dataset.
         Params
@@ -34,7 +37,15 @@ class PSLPDataset:
         downsample : bool
                      Downsample to 1h resolution or not.
         pslp : bool
-               Calculate PSLPs or not
+               Calculate PSLPs or not.
+        lookback : int
+                   Number of days to consider in Last(n) category PSLP calculation.
+        drop_consumption : Bool
+                drop_consumption : Bool
+                           Drop columns containing actual consumption. Default is True.
+        is_residual : Bool
+                      Drop initial n weeks without Last(n) category PSLPs or not. 
+                      Useful when training model on residual dataset. Default is True.        
         """
         self.start_date = start_date
         self.end_date = end_date
@@ -43,13 +54,23 @@ class PSLPDataset:
         self.api_key = api_key
         self.df = None
         self.original_headers = None
+        self.pslp_headers = None
+        self.residual_headers = None
+        self.categorical_headers = None
         self.errors = None
         self.downsample = downsample
-        self.fetch_data(pslp=pslp)
+        self.fetch_data(drop_consumption=drop_consumption,
+                        pslp=pslp, 
+                       )
         if pslp:
-            self.calculate_pslps()
+            self.calculate_pslps(lookback=lookback)
             self.calculate_residuals()
             self.calculate_errors()
+            if is_residual:
+                print(f"Dropping first {lookback} weeks without Last(n) category PSLPs...")
+                n_points_day = 24 if downsample else 96
+                self.df.drop(self.df.index[:lookback*7*n_points_day], inplace=True)
+                print(f"Final dataframe starts at {self.df.index[0]}.")
         
     
     def _get_load_intervals(self):
@@ -91,7 +112,9 @@ class PSLPDataset:
         return dates
         
         
-    def _load_data(self, start_date, end_date):
+    def _load_data(self, 
+                   start_date, 
+                   end_date):
         """
         Load actual load and actual aggregated generation per production type for requested time interval.
         Params
@@ -119,18 +142,23 @@ class PSLPDataset:
         df_final = pd.concat([df_load, df_gen], axis=1) # Concatenate dataframes in columns dimension.
         print(f"Concatenated data frame has shape {df_final.shape}.")
         
-        return df_final
+        return df_final.astype("float")
 
     
-    def fetch_data(self, drop_consumption=True, pslp=True):
+    def fetch_data(self, 
+                   drop_consumption=True, 
+                   pslp=True, 
+                  ):
         """
-        Fetch actual load and generation per type from ENTSO-E transparency platform 
+        Fetch load and generation per production type from ENTSO-E transparency platform 
         for requested time interval. Set resulting dataframe as attribute.
         
         Parameters
         ----------
         drop_consumption : Bool
-                           Drop columns containing actual consumption.
+                           Drop columns containing actual consumption. Default is True.
+        pslp : Bool
+               Calculate PSLPs or not. Default is True.                
         """
         # Determine sequence of dates to consider when loading data.
         dates = self._get_load_intervals()
@@ -145,17 +173,22 @@ class PSLPDataset:
     
                 # Drop columns containing actual consumption?
                 if drop_consumption:
-                    print("Dropping columns containing actual consumption...")
+                    print("Dropping columns containing consumption...")
                     df_final.drop(list(df_final.filter(regex='Consumption')), axis=1, inplace=True)
                 original_headers = df_final.columns
 
                 if pslp:
                     print("Creating columns for PSLP calculation...")
+                    pslp_headers = []
                     for header in original_headers:
+                        pslp_headers.append(str(header) + " PSLP") 
                         df_final[str(header) + " PSLP"] = pd.Series(dtype='float')
+                    self.pslp_headers = pslp_headers
+                        
                 if self.downsample:
                     print("Downsample to 1h resolution...")
-                    df_final = df_final.resample('1H', axis='index').mean()                
+                    df_final = df_final.resample('1H', axis='index').mean()
+                
                 print(f"Returning final data frame of shape {df_final.shape}...")
                 self.df = df_final
                 self.original_headers = original_headers
@@ -164,7 +197,6 @@ class PSLPDataset:
             try:
                 print(f"Trying to load data chunk for time interval [{dates[i]}, {dates[i+1]}]...")
                 df_temp = self._load_data(start_date=dates[i], end_date=dates[i+1])
-                print(df_temp.shape)
                 df_list.append(df_temp)
                 print("Loading successful!")
                 
@@ -253,10 +285,14 @@ class PSLPDataset:
         
         for d, wd, hd in zip(dates, weekdays, holidays):
             pslp_category.append(self.get_pslp_category(d, wd, hd))
-            
+        
+        self.categorical_headers = ["PSLP Category", "Holiday", "Weekday"]
         self.df["PSLP Category"] = pslp_category
         self.df["Holiday"] = holidays
         self.df["Weekday"] = weekdays
+        self.df["PSLP Category"] = self.df["PSLP Category"].astype("category")
+        self.df["Holiday"] = self.df["Holiday"].astype("category")
+        self.df["Weekday"] = self.df["Weekday"].astype("category")
     
     @staticmethod
     def _get_nearest_future_pslp_date(date_str, pslp_category=None):
@@ -328,7 +364,7 @@ class PSLPDataset:
                 print(f"{header}...")
             pslp_temp = pd.concat([self.df[header].at[d].reset_index(drop=True) for d in lookback_dates], axis=1).mean(axis=1)
             num_points = self.df[header].at[date_str].shape[0]
-            self.df[header+" PSLP"].at[date_str] = pslp_temp.head(num_points)
+            self.df[header+" PSLP"].at[date_str] = pslp_temp.head(num_points).astype("float")
         return
     
     def calculate_pslps(self, date_str=None, lookback=3, country_code='DE', DEBUG=False):
@@ -379,9 +415,12 @@ class PSLPDataset:
         """
         Calculate residuals of actual data w.r.t PSLPs.
         """
+        residual_headers = []
         for header in self.original_headers:
+            residual_headers.append(header+" Residuals")
             self.df[header+" Residuals"] = self.df[header] - self.df[header+" PSLP"]
-    
+            self.df[header+" Residuals"] = self.df[header+" Residuals"].astype("float")
+        self.residual_headers = residual_headers
     
     def plot_data(self):
         """

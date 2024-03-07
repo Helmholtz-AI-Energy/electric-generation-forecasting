@@ -173,7 +173,7 @@ def plot_actual_predicted_data(actual: pd.DataFrame, predicted: pd.DataFrame) ->
             col=1,
         )
     fig.update_yaxes(title_text="Mega Watt", row=i + 1, col=1)
-    fig.update_layout(height=10000, width=1200, showlegend=False)
+    fig.update_layout(height=10000, width=1200, showlegend=True)
     fig.show()
 
 

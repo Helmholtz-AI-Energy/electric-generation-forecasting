@@ -117,7 +117,7 @@ class SingleStepLSTMForecaster(nn.Module):
         n : int
             The number of steps to predict.
         target_date_time : pandas.DatetimeIndex
-            The datetime index of the given sample's corresponding target
+            The datetime index of the given sample's corresponding target.
         headers : pandas.Index
             The columns in the original dataframe.
 
@@ -131,7 +131,7 @@ class SingleStepLSTMForecaster(nn.Module):
         samples, labels = input_data
         input_samples = samples.unsqueeze(0)
         predictions = []  # List to store predictions.
-        date_time_index = []
+        actual_index = pd.DatetimeIndex([], freq=target_date_time.freq)
         log.debug(f"Initial input sample has shape {input_samples.shape}")
         # Loop for n steps.
         for _ in range(n):
@@ -142,7 +142,6 @@ class SingleStepLSTMForecaster(nn.Module):
 
             # Store prediction.
             predictions.append(prediction)
-            date_time_index.append(target_date_time)
             log.debug(
                 f"Current target datetime index is {target_date_time}.\n"
                 f"Current input sample has shape {input_samples.shape}."
@@ -151,12 +150,13 @@ class SingleStepLSTMForecaster(nn.Module):
             # Shift the sequence one step forward by discarding the first time step
             # and appending the predicted value at the end.
             input_samples = torch.cat([input_samples[:, 1:, :], prediction], dim=1)
+            actual_index = actual_index.append(target_date_time)
             target_date_time += target_date_time.freq
         # Concatenate predictions along the sequence length dimension.
         return pd.DataFrame(
             torch.cat(predictions, dim=1).squeeze(0).numpy(),
             columns=headers,
-            index=np.array(date_time_index),
+            index=actual_index,
         )
 
     def predict_next_step_from_dataloader(
@@ -184,23 +184,88 @@ class SingleStepLSTMForecaster(nn.Module):
         -------
         pd.DataFrame
             The predicted values for the next time step for each sample in the test dataset.
+
+        Raises
+        ------
+        ValueError
+            If target date time index and dataloader do not contain the same number of samples.
         """
+        if len(date_time_index) != len(test_loader):
+            raise ValueError(
+                "Target date time index and data loader must have the same length, "
+                "i.e., must contain the same number of samples."
+            )
         self.eval()  # Set the model to evaluation mode.
         predictions = []  # List to store predictions.
-
+        actual_index = pd.DatetimeIndex([], freq=date_time_index[0].freq)
         with torch.no_grad():  # Turn off gradient tracking.
-            for x, _ in test_loader:  # Loop over samples in batched train data.
+            for time_point, (x, _) in zip(
+                date_time_index, test_loader
+            ):  # Loop over samples in batched train data.
                 x = x.to(device)  # Move sample to device.
                 prediction = self(x)
                 predictions.append(prediction)
+                actual_index = actual_index.append(time_point)
 
         # Concatenate predictions along the batch dimension
         predictions = torch.cat(predictions, dim=0).squeeze().cpu().numpy()
-
         # Create DataFrame with predictions and date time index
         return pd.DataFrame(
-            predictions, columns=headers, index=np.array(date_time_index)
+            predictions,
+            columns=headers,
+            index=actual_index,
         )
+
+
+class EarlyStopping:
+    """Early stopping to terminate training when validation loss stops improving."""
+
+    def __init__(
+        self, patience: int = 10, delta: float = 0, verbose: bool = False
+    ) -> None:
+        """
+        Parameters
+        ----------
+        patience : int, optional
+            Number of epochs to wait for improvement before terminating the training. Default is 10.
+        delta : float, optional
+            Minimum change in the monitored quantity to qualify as an improvement. Default is 0.
+        verbose : bool, optional
+            If True, prints a message for each patience increment. Default is False.
+        """
+        self.patience = patience
+        self.delta = delta
+        self.verbose = verbose
+        self.counter = 0
+        self.best_loss: Optional[float] = None
+        self.early_stop = False
+
+    def __call__(self, val_loss: float) -> bool:
+        """
+        Check if the validation loss has stopped improving.
+
+        Parameters
+        ----------
+        val_loss : float
+            The validation loss at the current epoch.
+
+        Returns
+        -------
+        bool
+            True if training should be stopped early, False otherwise.
+        """
+        if self.best_loss is None:
+            self.best_loss = val_loss
+        elif val_loss > self.best_loss - self.delta:
+            self.counter += 1
+            log.info(f"EarlyStopping counter: {self.counter} out of {self.patience}")
+            if self.counter >= self.patience:
+                self.early_stop = True
+        else:
+            self.best_loss = val_loss
+            self.counter = 0
+
+        return self.early_stop
 
 
 def train_model(
@@ -247,6 +312,8 @@ def train_model(
         [],
     )  # Initialize history lists for training and validation losses.
 
+    early_stopping = EarlyStopping(patience=10, verbose=True)
+
     for epoch in range(n_epochs):  # Loop over epochs.
         start_epoch = time.perf_counter()  # Measure training time.
         train_loss, valid_loss = (
@@ -285,7 +352,7 @@ def train_model(
                 predictions = model(x).squeeze()  # Forward pass
                 error = criterion(predictions, y)  # Calculate batch loss.
             valid_loss += error.item()
-        valid_loss = valid_loss / len(valid_loader)  # Calculate average valid loss.
+        valid_loss /= len(valid_loader)  # Calculate average valid loss.
         valid_losses.append(valid_loss)  # Append valid loss to history.
         elapsed_epoch = (
             time.perf_counter() - start_epoch
@@ -296,8 +363,14 @@ def train_model(
                 f"validation loss is {valid_loss}."
             )
 
+        if early_stopping(valid_loss):
+            log.info(
+                f"Validation loss has not improved for {early_stopping.patience} epochs. Stopping early."
+            )
+            break
+
         if scheduler is not None:  # Adapt learning rate.
-            scheduler.step(valid_losses[-1])
+            scheduler.step(valid_loss)
 
     log.info(f"Overall training time: {(time.perf_counter() - start) / 60} min")
     log.info(f"Save model and optimizer state dicts to disk for later inference.")

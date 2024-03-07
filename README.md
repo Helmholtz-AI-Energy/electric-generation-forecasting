@@ -1,5 +1,7 @@
 # Electric Generation Forecasting (EGF)
-![](figs/logo.jpg)
+
+<img src="logo.jpg" alt="logo" width="200"/>
+
 ## AI-based Prediction of the German Electricity Mix
 
 [![License: BSD-3](https://img.shields.io/badge/License-BSD--3-blue)](https://opensource.org/licenses/BSD-3-Clause)

@@ -1,6 +1,6 @@
 # Electric Generation Forecasting (EGF)
 
-<img src="logo.jpg" alt="logo" width="200"/>
+<img src="figs/logo.jpg" alt="logo" width="200"/>
 
 ## AI-based Prediction of the German Electricity Mix
 
@@ -107,7 +107,8 @@ The actual load is a $1 \times n_T$ matrix (or row vector).
 Line indices of concatenated data matrix specify data type, i.e., load or generation type, column indices specify 
 considered point in time. 
 
-![](figs/entsoe_data_matrix.png)
+<img src="figs/entsoe_data_matrix.png" alt="Data matrix" width="200"/>
+
 
 ### Models
 *Note that only PSLPs and a single-step LSTM are implemented in the scope of this repo.*

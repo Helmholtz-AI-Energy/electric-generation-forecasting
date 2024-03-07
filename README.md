@@ -1,7 +1,21 @@
 # Electric Generation Forecasting (EGF)
 ## AI-based Prediction of the German Electricity Mix
 
+[![License: BSD-3](https://img.shields.io/badge/License-BSD--3-blue)](https://opensource.org/licenses/BSD-3-Clause)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![](https://img.shields.io/badge/Contact-marie.weiel%40kit.edu-orange)](mailto:marie.weiel@kit.edu)
+
 This repository deals with AI-based prediction of the German electricity mix.
+
+All Python source code can be found in `egf/`. Modules can be tested by executing them directly with `python <module>.py`:
+- `entsoe_dataset.py`: Module for ENTSO-E dataset base class
+- `pslp.py`: PSLP module
+- `sarima.py`: SARIMA module
+- `lstm.py`: Single-step LSTM model module
+- `utils.py`: Utility functions
+- `lstm_single_step.ipynb`: Jupyter notebook illustrating how to train a single-step LSTM on scaled ENTSO-E generation 
+  and load data.
+
 
 ### Problem
 We want to perform time series prediction of the ENTSO-E actual generation per production type and actual load data, 

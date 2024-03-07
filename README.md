@@ -19,7 +19,7 @@ All Python source code can be found in `egf/`. Modules can be tested by executin
 - `lstm.py`: Single-step LSTM model module
 - `utils.py`: Utility functions
 - `lstm_single_step.ipynb`: Jupyter notebook illustrating how to train a single-step LSTM on scaled ENTSO-E generation 
-  and load data.
+  and load data
 
 `lstm_ckpts` contains exemplary checkpoints of a single trained single-step LSTM network.
 

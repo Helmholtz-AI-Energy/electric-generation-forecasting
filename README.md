@@ -107,7 +107,7 @@ The actual load is a $1 \times n_T$ matrix (or row vector).
 Line indices of concatenated data matrix specify data type, i.e., load or generation type, column indices specify 
 considered point in time. 
 
-<img src="figs/entsoe_data_matrix.png" alt="Data matrix" width="600"/>
+<img src="figs/entsoe_data_matrix.png" alt="Data matrix" width="400"/>
 
 
 ### Models

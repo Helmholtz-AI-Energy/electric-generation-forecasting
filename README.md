@@ -86,7 +86,7 @@ In addition, we consider the total load per market time unit, $\mathbf{L}$, in G
 The actual generation per production type can be expressed as a $n_g \times n_T$ matrix where each row corresponds to the temporal evolution of the generation of one production type. 
 The actual load is a $1 \times n_T$ matrix (or row vector).
 Line indices of concatenated data matrix specify data type, i.e., load or generation type, column indices specify considered point in time. 
-\begin{align}
+$$
     \begin{bmatrix}
         \mathbf{L}\\
         \mathbf{G} 
@@ -105,7 +105,7 @@ With $g_{0j} := l_j$:
         \vdots & \vdots & \ddots & \vdots \\
         g_{n_g1} & g_{n_g2} & \dots & g_{n_gn_T}
     \end{bmatrix}
-\end{align}
+$$
 
 ### Models
 *Note that only PSLPs and a single-step LSTM are implemented in the scope of this repo.*
@@ -232,7 +232,6 @@ particular when looking at our single-step LSTM model implementation in `egf/lst
   flexible (use stride of 1)?
 
 Check out the links below to learn more about LSTMs:
-- ftp://ftp.idsia.ch/pub/juergen/lstm.pdf
 - https://colah.github.io/posts/2015-08-Understanding-LSTMs/
 - https://towardsdatascience.com/from-a-lstm-cell-to-a-multilayer-lstm-network-with-pytorch-2899eb5696f3
 - https://towardsdatascience.com/pytorch-lstms-for-time-series-data-cd16190929d7
@@ -242,6 +241,7 @@ Check out the links below to learn more about LSTMs:
 - https://towardsdatascience.com/time-series-forecasting-with-deep-learning-in-pytorch-lstm-rnn-1ba339885f0c
 - https://towardsdatascience.com/pytorch-lstms-for-time-series-data-cd16190929d7
 - https://www.youtube.com/watch?v=tepxdcepTbY
+- ftp://ftp.idsia.ch/pub/juergen/lstm.pdf
 
 ##### Sequence-to-sequence model (Seq2Seq)**
 A Seq2Seq model is a type of neural network architecture designed for tasks where the input and output are both 
@@ -368,5 +368,4 @@ temporal patterns and dependencies in the data.
   measure to describe this, e.g., fraction or similar for calculating $\text{CO}_2$ emissions in GER.
 - Modifying input artificially is a bad idea; Out-Of-Sample Distribution; If one were to do this, NN needs to be trained 
   on synthetic data as well!
-- How to handle NaN's in ENTSO-E input data?
-  - Set to 0 for Nuclear.
+- How to handle NaN's in ENTSO-E input data? Set to 0 for Nuclear.

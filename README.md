@@ -8,7 +8,7 @@
 
 [![License: BSD-3](https://img.shields.io/badge/License-BSD--3-blue)](https://opensource.org/licenses/BSD-3-Clause)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![](https://img.shields.io/badge/Contact-marie.weiel%40kit.edu-orange)](mailto:marie.weiel@kit.edu)
+[![](https://img.shields.io/badge/Contact-marie.weiel%40kit.edu-yellow)](mailto:marie.weiel@kit.edu)
 
 This repository deals with AI-based prediction of the German electricity mix.
 

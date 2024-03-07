@@ -4,7 +4,7 @@ import datetime
 import logging
 from pathlib import Path
 import sys
-from typing import Any, Dict, List, Tuple, Union
+from typing import Dict, List, Tuple, Union
 import uuid
 
 import colorlog
@@ -172,7 +172,7 @@ def plot_actual_predicted_data(actual: pd.DataFrame, predicted: pd.DataFrame) ->
             row=i + 1,
             col=1,
         )
-    fig.update_yaxes(title_text="Mega Watt", row=i + 1, col=1)
+        fig.update_yaxes(title_text="Mega Watt", row=i + 1, col=1)
     fig.update_layout(height=10000, width=1200, showlegend=True)
     fig.show()
 

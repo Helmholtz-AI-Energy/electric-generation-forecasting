@@ -41,6 +41,8 @@ def fit_sarima(
 
     Parameters
     ----------
+    dataset : EntsoeDataset
+        The ENTSO-E dataset to fit the SARIMA model to.
     save_dir : Union[pathlib.Path, str], optional
         The path to the directory where to save the models to. Default is current working directory.
     update_level : int, optional
@@ -125,7 +127,7 @@ def fit_sarima(
     elif update_level == 2:
         log.info("Fit new models from scratch with `auto_arima`...")
         # Loop over categories in data, i.e., load and generation types.
-        for category in dataset.original_headers:
+        for category in dataset.df.columns:
             log.info(
                 f"Consider {category}.\nPre-compute (seasonal) differencing order to accelerate auto-ARIMA..."
             )
@@ -163,7 +165,7 @@ def fit_sarima(
             )
 
             models[category] = model
-            print(model.summary())
+            log.info(model.summary())
 
     log.info("DONE.")
     today = datetime.datetime.today()

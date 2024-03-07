@@ -85,27 +85,10 @@ The actual generation of small-scale units might be estimated if no real-time me
 In addition, we consider the total load per market time unit, $\mathbf{L}$, in Germany (https://transparency.entsoe.eu/content/static_content/Static\%20content/knowledge\%20base/data-views/load-domain/Data-view\%20Total\%20Load\%20-\%20Day\%20Ahead\%20-\%20Actual.html). 
 The actual generation per production type can be expressed as a $n_g \times n_T$ matrix where each row corresponds to the temporal evolution of the generation of one production type. 
 The actual load is a $1 \times n_T$ matrix (or row vector).
-Line indices of concatenated data matrix specify data type, i.e., load or generation type, column indices specify considered point in time. 
-$$
-    \begin{bmatrix}
-        \mathbf{L}\\
-        \mathbf{G} 
-    \end{bmatrix} =
-    \begin{bmatrix} 
-        l_j\\
-        g_{ij}
-    \end{bmatrix} 
-\end{align}
-With $g_{0j} := l_j$:
-\begin{align}
-    \Tilde{\mathbf{G}}=
-    \begin{bmatrix}
-        g_{01} & g_{02} & \dots & g_{0n_T} \\
-        g_{11} & g_{12} & \dots & g_{1n_T} \\
-        \vdots & \vdots & \ddots & \vdots \\
-        g_{n_g1} & g_{n_g2} & \dots & g_{n_gn_T}
-    \end{bmatrix}
-$$
+Line indices of concatenated data matrix specify data type, i.e., load or generation type, column indices specify 
+considered point in time. 
+
+![](figs/entsoe_data_matrix.png)
 
 ### Models
 *Note that only PSLPs and a single-step LSTM are implemented in the scope of this repo.*

@@ -81,19 +81,19 @@ In an exemplary data snippet downloaded for Germany, there are 23 columns, i.e.,
 To reduce the problem complexity, we apply the category mapping from Unnewehr et al. (2022), 
 *Open-data based carbon emission intensity signals for electricity generation in European countries – 
 top down vs. bottom up approach*, Cleaner Energy Systems, Volume 3, 2022, doi: [10.1016/j.cles.2022.100018](https://doi.org/10.1016/j.cles.2022.100018):
->- Actual Load: Actual Load
->- Hard Coal: Fossil Hard coal Actual Aggregated
->- Lignite: Fossil Brown coal/Lignite Actual Aggregated
->- Gas: Fossil Gas Actual Aggregated
->- Other Fossil: Fossil Coal-derived gas Actual Aggregated, Fossil Oil Actual Aggregated, Other Actual Aggregated
->- Nuclear: Nuclear Actual Aggregated
->- Biomass: Biomass Actual Aggregated
->- Waste: Waste Actual Aggregated
->- Other Renewable: Geothermal Actual Aggregated, Other renewable Actual Aggregated
->- Hydro: Hydro Pumped Storage Actual Aggregated, Hydro Run-of-river and poundage Actual Aggregated, Hydro Water Reservoir Actual Aggregated
->- Solar: Solar Actual Aggregated
->- Wind Onshore: Wind Onshore Actual Aggregated
->- Wind Offshore: Wind Offshore Actual Aggregated
+>- **Actual Load:** Actual Load
+>- **Hard Coal:** Fossil Hard coal Actual Aggregated
+>- **Lignite:** Fossil Brown coal/Lignite Actual Aggregated
+>- **Gas:** Fossil Gas Actual Aggregated
+>- **Other Fossil:** Fossil Coal-derived gas Actual Aggregated, Fossil Oil Actual Aggregated, Other Actual Aggregated
+>- **Nuclear:** Nuclear Actual Aggregated
+>- **Biomass:** Biomass Actual Aggregated
+>- **Waste:** Waste Actual Aggregated
+>- **Other Renewable:** Geothermal Actual Aggregated, Other renewable Actual Aggregated
+>- **Hydro:** Hydro Pumped Storage Actual Aggregated, Hydro Run-of-river and poundage Actual Aggregated, Hydro Water Reservoir Actual Aggregated
+>- **Solar:** Solar Actual Aggregated
+>- **Wind Onshore:** Wind Onshore Actual Aggregated
+>- **Wind Offshore:** Wind Offshore Actual Aggregated
 
 Feel free to also check out:
 - https://ag-energiebilanzen.de/wp-content/uploads/2023/03/STRERZ22A11_Abg_0223.pdf

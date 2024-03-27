@@ -229,7 +229,7 @@ if __name__ == "__main__":
         colors=True,  # Use colors.
     )  # Set up logger.
 
-    api_key = "6e68642c-8403-4caa-af31-bda40b8c67f6"  # Web token for RESTful API
+    api_key = ...  # Insert your web token for RESTful API here!
     country_code = "10Y1001A1001A83F"  # Germany
     time_zone = "Europe/Berlin"  # Time zone for Germany
     start_date = "20180601"

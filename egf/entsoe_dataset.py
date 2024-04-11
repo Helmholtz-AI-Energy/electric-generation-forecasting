@@ -86,46 +86,6 @@ class EntsoeDataset:
         self.downsample = downsample
         self.df = self.fetch_data(drop_consumption=drop_consumption)
 
-    def _get_load_intervals(self) -> pd.Series:
-        """
-        Get time points for sequential data loading from ENTSO-E transparency platform.
-
-        The time delta for loading data from the platform is limited to one year per request.
-
-        Returns
-        -------
-        pd.Series
-            The series of timestamps of time points to consider between start and end date
-        """
-        # Convert start and end dates to timestamps.
-        start = pd.Timestamp(self.start_date, tz=self.time_zone)
-        end = pd.Timestamp(self.end_date, tz=self.time_zone)
-
-        # Create series from start and end timestamps.
-        start_series = pd.Series(pd.Timestamp(self.start_date))
-        end_series = pd.Series(pd.Timestamp(self.end_date))
-
-        # Create date range from start and end dates and determine year starts within range.
-        # Convert data range to series.
-        dates = pd.date_range(
-            start=self.start_date,
-            end=self.end_date,
-            freq="YS",
-            inclusive="both",
-        ).to_series()
-
-        # Check whether start date itself is year start.
-        # If not, prepend to dates to consider for data loading.
-        if not start.is_year_start:
-            dates = pd.concat([start_series, dates], ignore_index=True)
-
-        # Check whether end date itself is year start.
-        # If not, append to dates to consider for data loading.
-        if not end.is_year_start:
-            dates = pd.concat([dates, end_series], ignore_index=True)
-
-        return dates
-
     def _load_data(
         self,
         start_date: str,
@@ -210,71 +170,47 @@ class EntsoeDataset:
             "wind_onshore": ["Wind Onshore Actual Aggregated"],
             "wind_offshore": ["Wind Offshore Actual Aggregated"],
         }
-        # Determine sequence of dates to consider when loading data.
-        dates = self._get_load_intervals()
-        log.info(f"Consider the following dates:\n{dates}")
-        df_list = []
+        try:
+            log.info(f"Loading data from {self.start_date} to {self.end_date}")
+            df = self._load_data(start_date=self.start_date, end_date=self.end_date)
+        except Exception as e:
+            log.info("FAILED.", e)
 
-        for i, _ in enumerate(dates):
+        log.info(
+            "Setting N/A's to 0 for 'Nuclear' due to shutdown of nuclear power plants in GER..."
+        )
 
-            if i == dates.shape[0] - 1:
-                log.debug([_df.shape for _df in df_list])
-                log.debug(
-                    f"Differences in columns:\n{[df_list[0].columns.difference(_df.columns) for _df in df_list]}"
-                )
-                df = pd.concat(
-                    df_list, axis=0, join="inner"
-                )  # Concatenate dataframes along time axis (index).
-                log.info(
-                    "Setting N/A's to 0 for 'Nuclear' due to shutdown of nuclear power plants in GER..."
-                )
-                df["Nuclear Actual Aggregated"] = df[
-                    "Nuclear Actual Aggregated"
-                ].fillna(0)
-                df.index = pd.to_datetime(df.index, utc=True).tz_convert(tz="UTC+01:00")
-                if drop_consumption:  # Drop columns containing actual consumption.
-                    log.info("Dropping columns containing consumption...")
-                    df.drop(list(df.filter(regex="Consumption")), axis=1, inplace=True)
-                else:
-                    pass
-                    # TODO: Possibly implement difference between columns production - consumption if available.
-                # TODO: How to handle NaNs? Interpolate? Use PSLP? Set to 0?
-                df.interpolate(method="time", axis=0, inplace=True)
-                # Time-based interpolation is specifically designed for time series data. It fills missing values using
-                # linear interpolation based on time, where the time difference between consecutive data points is used
-                # to compute intermediate values.
-                # Apply generation type mapping (Unnewehr et al. 2022).
-                log.debug(f"Original categories in the data are: {df.columns}")
-                for joint_category, old_categories in generation_type_mapping.items():
-                    existing_columns = [
-                        col for col in old_categories if col in df.columns
-                    ]
-                    log.debug(f"Existing columns are {existing_columns}.")
-                    if existing_columns:
-                        # Sum up existing columns and drop them
-                        df[joint_category] = df[existing_columns].sum(
-                            axis=1, skipna=False
-                        )
-                        df.drop(columns=existing_columns, inplace=True)
+        df["Nuclear Actual Aggregated"] = df["Nuclear Actual Aggregated"].fillna(0)
+        df.index = pd.to_datetime(df.index, utc=True).tz_convert(tz="UTC+01:00")
+        if drop_consumption:  # Drop columns containing actual consumption.
+            log.info("Dropping columns containing consumption...")
+            df.drop(list(df.filter(regex="Consumption")), axis=1, inplace=True)
+        else:
+            pass
+            # TODO: Possibly implement difference between columns production - consumption if available.
 
-                if self.downsample:
-                    log.info("Downsample to 1h resolution...")
-                    df = df.resample("1h").mean()
+        # TODO: How to handle NaNs? Interpolate? Use PSLP? Set to 0?
+        df.interpolate(method="time", axis=0, inplace=True)
+        # Time-based interpolation is specifically designed for time series data. It fills missing values using
+        # linear interpolation based on time, where the time difference between consecutive data points is used
+        # to compute intermediate values.
 
-                log.info(f"Returning final data frame of shape {df.shape}...")
-                return df
+        # Apply generation type mapping (Unnewehr et al. 2022).
+        log.debug(f"Original categories in the data are: {df.columns}")
+        for joint_category, old_categories in generation_type_mapping.items():
+            existing_columns = [col for col in old_categories if col in df.columns]
+            log.debug(f"Existing columns are {existing_columns}.")
+            if existing_columns:
+                # Sum up existing columns and drop them
+                df[joint_category] = df[existing_columns].sum(axis=1, skipna=False)
+                df.drop(columns=existing_columns, inplace=True)
 
-            try:
-                log.info(
-                    f"Loading data chunk for time interval [{dates[i]}, {dates[i+1]}]..."
-                )
-                df_temp = self._load_data(start_date=dates[i], end_date=dates[i + 1])
-                df_list.append(df_temp)
-                log.info("SUCCESS.")
+        if self.downsample:
+            log.info("Downsample to 1h resolution...")
+            df = df.resample("1h").mean()
 
-            except Exception as e:
-                log.info("FAILED.", e)
-                continue
+        log.info(f"Returning final data frame of shape {df.shape}...")
+        return df
 
     def plot_data(self) -> None:
         """Plot preprocessed load and generation data."""
